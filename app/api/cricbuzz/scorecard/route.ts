@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { rowsToCsv } from "@/lib/scorecards/toCsv";
 import { scrapeCricbuzzScorecard } from "@/lib/scrapers/sites/cricbuzz/scrape";
 
+export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {

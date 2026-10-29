@@ -1,3 +1,4 @@
+import { CricbuzzDiscoverBatch } from "@/app/components/CricbuzzDiscoverBatch";
 import { CricbuzzScorecardQa } from "@/app/components/CricbuzzScorecardQa";
 import { ScrapeWorkbench } from "@/app/components/ScrapeWorkbench";
 import { buildWorkbenchView } from "@/app/data/scrapeWorkbench";
@@ -8,9 +9,10 @@ export default function HomePage() {
     <main>
       <h1>Cricket scorecard scrapers</h1>
       <p className="lead">
-        Paste a Cricbuzz scorecard URL to scrape and QA visually, or use discover / batch flow
-        below (example site).
+        Discover recent Cricbuzz matches and export scorecards to one CSV, paste a URL for single-match
+        QA, or use the example batch flow below.
       </p>
+      <CricbuzzDiscoverBatch />
       <CricbuzzScorecardQa />
       <ScrapeWorkbench initial={view} />
     </main>
