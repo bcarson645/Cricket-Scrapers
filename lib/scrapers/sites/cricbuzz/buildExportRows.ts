@@ -14,6 +14,7 @@ import {
 import { mapCricbuzzDismissal, normalizePersonName } from "@/lib/scrapers/sites/cricbuzz/dismissal";
 import {
   findBowler,
+  isMultiInningsMatch,
   type CricbuzzBatLine,
   type CricbuzzBowlLine,
   type CricbuzzInnings,
@@ -114,6 +115,22 @@ function samePlayer(a: string, b: string): boolean {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+function sameTeamName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+/** Bowling figures for players when their side is fielding (opposition batting innings). */
+function bowlersWhenTeamFielded(parsed: CricbuzzParsedMatch, battingInn: CricbuzzInnings): CricbuzzBowlLine[] {
+  return parsed.innings
+    .filter((i) => sameTeamName(i.teamName, battingInn.opponentName))
+    .flatMap((i) => i.bowlers);
+}
+
+function exportInnsValue(inn: CricbuzzInnings, parsed: CricbuzzParsedMatch): number {
+  if (isMultiInningsMatch(parsed)) return inn.teamBattingInningsIndex;
+  return inn.inningsNumber;
+}
+
 export function cricbuzzToExportRows(
   parsed: CricbuzzParsedMatch,
   options?: { matchIdOverride?: string | number },
@@ -125,8 +142,7 @@ export function cricbuzzToExportRows(
   const chaseTarget = parsed.innings.find((i) => i.inningsNumber === 1)?.total ?? null;
 
   for (const inn of parsed.innings) {
-    const oppInn = parsed.innings.find((i) => i.inningsNumber !== inn.inningsNumber);
-    const bowlingWhenFielding = oppInn?.bowlers ?? [];
+    const bowlingWhenFielding = bowlersWhenTeamFielded(parsed, inn);
     const innTopBat = topBatterInInnings(inn);
     const innTopBowl = topBowlerInInnings(bowlingWhenFielding);
 
@@ -143,7 +159,7 @@ export function cricbuzzToExportRows(
       setCol(row, "Host", parsed.host);
       setCol(row, "Team", inn.teamName);
       setCol(row, "Opps", inn.opponentName);
-      setCol(row, "Inns", inn.inningsNumber);
+      setCol(row, "Inns", exportInnsValue(inn, parsed));
       setCol(row, "Total", inn.total);
       setCol(row, "Wkts", inn.wickets);
       setTeamExtras(row, inn.extras);

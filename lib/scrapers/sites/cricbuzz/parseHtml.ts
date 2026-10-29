@@ -26,6 +26,8 @@ export type CricbuzzBowlLine = {
 
 export type CricbuzzInnings = {
   inningsNumber: number;
+  /** Which time this team is batting in the match (1st, 2nd, …). */
+  teamBattingInningsIndex: number;
   teamName: string;
   opponentName: string;
   total: number;
@@ -155,6 +157,7 @@ function parseInningsBlock(
 
   return {
     inningsNumber,
+    teamBattingInningsIndex: 1,
     teamName: defaultTeam,
     opponentName,
     total: totalMatch ? parseNum(totalMatch[1]!) : 0,
@@ -218,10 +221,99 @@ function teamsFromTitle(title: string | null): [string, string] | null {
 
 function inferFormatLabel(title: string | null, maxOvers: number | null): string {
   const t = (title ?? "").toLowerCase();
+  if (t.includes("championship") || t.includes("first class") || (maxOvers ?? 0) >= 90) {
+    return "First Class";
+  }
   if (t.includes("t20i") || t.includes("world cup") || t.includes("international")) return "T20I Major";
   if (maxOvers === 20 || t.includes("t20")) return "T20";
   if (t.includes("odi") || maxOvers === 50) return "ODI";
   return "T20";
+}
+
+export function isMultiInningsMatch(parsed: Pick<CricbuzzParsedMatch, "innings" | "maxOvers" | "title">): boolean {
+  if (parsed.innings.length > 2) return true;
+  if ((parsed.maxOvers ?? 0) >= 90) return true;
+  const t = (parsed.title ?? "").toLowerCase();
+  return /championship|first class|\btest\b|multi-day/.test(t);
+}
+
+function normalizeCricbuzzTeamLabel(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function parseCricbuzzTeamIdMap(html: string): Map<number, string> {
+  const map = new Map<number, string>();
+  const patterns = [
+    /\\"teamId\\":(\d+),\\"teamName\\":\\"([^\\"]+)\\"/g,
+    /"teamId":(\d+),"teamName":"([^"]+)"/g,
+  ];
+  for (const re of patterns) {
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) !== null) {
+      const id = Number(m[1]);
+      if (!map.has(id)) map.set(id, normalizeCricbuzzTeamLabel(m[2]!));
+    }
+  }
+  return map;
+}
+
+function opponentForTeam(teamName: string, pair: string[]): string {
+  const key = teamName.toLowerCase();
+  const other = pair.find((t) => t.toLowerCase() !== key);
+  return other ?? "Opposition";
+}
+
+function parseInningsHeaderLabel(
+  $: cheerio.CheerioAPI,
+  cricbuzzTeamId: number,
+  inningsNumber: number,
+): { teamName: string | null; teamBattingInningsIndex: number | null } {
+  const header = $(`#team-${cricbuzzTeamId}-innings-${inningsNumber}`);
+  if (!header.length) return { teamName: null, teamBattingInningsIndex: null };
+
+  const longLabel = header.find(".hidden.tb\\:block").first().text().replace(/\s+/g, " ").trim();
+  const shortLabel = header.text().replace(/\s+/g, " ").trim();
+  const label = longLabel || shortLabel;
+
+  const ord = label.match(/(\d+)(?:st|nd|rd|th)\s+Innings/i);
+  const nameMatch = label.match(/^(.+?)\s+\d+(?:st|nd|rd|th)\s+Innings/i);
+  let teamName = nameMatch?.[1]?.trim() ?? null;
+  if (teamName && /^[A-Z]{2,4}$/.test(teamName)) {
+    const fromTitle = teamsFromTitle($("h1").first().text().split("- Scorecard")[0]?.trim() ?? null);
+    if (fromTitle) {
+      const abbr = teamName.toLowerCase();
+      const hit = fromTitle.find((t) => t.toLowerCase().startsWith(abbr) || abbr.startsWith(t.slice(0, 3).toLowerCase()));
+      if (hit) teamName = hit;
+    }
+  }
+
+  return {
+    teamName,
+    teamBattingInningsIndex: ord ? parseInt(ord[1]!, 10) : null,
+  };
+}
+
+function discoverScardInnings($: cheerio.CheerioAPI): {
+  selector: string;
+  inningsNumber: number;
+  cricbuzzTeamId: number;
+}[] {
+  const found: { selector: string; inningsNumber: number; cricbuzzTeamId: number }[] = [];
+  $("[id^='scard-team-']").each((_, el) => {
+    const id = $(el).attr("id") ?? "";
+    const m = id.match(/^scard-team-(\d+)-innings-(\d+)$/);
+    if (!m) return;
+    found.push({
+      selector: `#${id}`,
+      cricbuzzTeamId: parseInt(m[1]!, 10),
+      inningsNumber: parseInt(m[2]!, 10),
+    });
+  });
+  return found.sort((a, b) => a.inningsNumber - b.inningsNumber);
 }
 
 function parseVenue($: cheerio.CheerioAPI): string | null {
@@ -236,17 +328,6 @@ function parseVenue($: cheerio.CheerioAPI): string | null {
   const m = body.match(/Venue[:\s]+([A-Za-z0-9\s,'-]+?)(?:\s{2,}|Time|Series|Match)/i);
   const raw = m?.[1]?.trim() ?? null;
   return raw ? normalizeVenueLabel(raw) : null;
-}
-
-function discoverScardInnings($: cheerio.CheerioAPI): { selector: string; inningsNumber: number }[] {
-  const found: { selector: string; inningsNumber: number }[] = [];
-  $("[id^='scard-team-']").each((_, el) => {
-    const id = $(el).attr("id") ?? "";
-    const m = id.match(/^scard-team-\d+-innings-(\d+)$/);
-    if (!m) return;
-    found.push({ selector: `#${id}`, inningsNumber: parseInt(m[1]!, 10) });
-  });
-  return found.sort((a, b) => a.inningsNumber - b.inningsNumber);
 }
 
 function parseSquads(
@@ -285,22 +366,31 @@ export function parseCricbuzzScorecardHtml(html: string, matchId: string): Cricb
   const $ = cheerio.load(html);
   const title = $("h1").first().text().split("- Scorecard")[0]?.trim() ?? null;
   const teams = teamsFromTitle(title);
+  const teamIdMap = parseCricbuzzTeamIdMap(html);
   const blocks = discoverScardInnings($);
+  const teamPair = teams ?? [];
+  const teamInningsCount = new Map<number, number>();
 
   const innings: CricbuzzInnings[] = [];
   for (const block of blocks) {
+    const header = parseInningsHeaderLabel($, block.cricbuzzTeamId, block.inningsNumber);
+    const fromId = teamIdMap.get(block.cricbuzzTeamId);
     const battingTeam =
-      block.inningsNumber === 1 ? teams?.[0] : block.inningsNumber === 2 ? teams?.[1] : undefined;
-    const opponent =
-      block.inningsNumber === 1 ? teams?.[1] : block.inningsNumber === 2 ? teams?.[0] : undefined;
-    const parsed = parseInningsBlock(
-      $,
-      block.selector,
-      block.inningsNumber,
-      opponent ?? "Opposition",
-      battingTeam ?? `Innings ${block.inningsNumber}`,
-    );
-    if (parsed) innings.push(parsed);
+      header.teamName ??
+      fromId ??
+      (block.inningsNumber === 1 ? teams?.[0] : block.inningsNumber === 2 ? teams?.[1] : undefined);
+    const teamName = battingTeam ?? `Innings ${block.inningsNumber}`;
+    const pair = teamPair.length >= 2 ? teamPair : teams ?? [teamName];
+    const opponent = opponentForTeam(teamName, pair);
+    const prev = teamInningsCount.get(block.cricbuzzTeamId) ?? 0;
+    const teamBattingInningsIndex = header.teamBattingInningsIndex ?? prev + 1;
+    teamInningsCount.set(block.cricbuzzTeamId, teamBattingInningsIndex);
+
+    const parsed = parseInningsBlock($, block.selector, block.inningsNumber, opponent, teamName);
+    if (parsed) {
+      parsed.teamBattingInningsIndex = teamBattingInningsIndex;
+      innings.push(parsed);
+    }
   }
 
   const maxOvers = innings[0]?.oversCap ?? 20;

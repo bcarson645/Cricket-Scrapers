@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { CricbuzzDiscoverBatch } from "@/app/components/CricbuzzDiscoverBatch";
 import { CricbuzzScorecardQa } from "@/app/components/CricbuzzScorecardQa";
+import { CricbuzzSeriesBatch } from "@/app/components/CricbuzzSeriesBatch";
 
-type TabId = "recent" | "single";
+type TabId = "recent" | "series" | "single";
 
 export function CricbuzzTabs() {
   const [tab, setTab] = useState<TabId>("recent");
@@ -26,6 +27,17 @@ export function CricbuzzTabs() {
         <button
           type="button"
           role="tab"
+          id="tab-series"
+          aria-selected={tab === "series"}
+          aria-controls="panel-series"
+          className={tab === "series" ? "tab active" : "tab"}
+          onClick={() => setTab("series")}
+        >
+          Series
+        </button>
+        <button
+          type="button"
+          role="tab"
           id="tab-single"
           aria-selected={tab === "single"}
           aria-controls="panel-single"
@@ -43,6 +55,15 @@ export function CricbuzzTabs() {
         className="tab-panel"
       >
         {tab === "recent" && <CricbuzzDiscoverBatch />}
+      </div>
+      <div
+        role="tabpanel"
+        id="panel-series"
+        aria-labelledby="tab-series"
+        hidden={tab !== "series"}
+        className="tab-panel"
+      >
+        {tab === "series" && <CricbuzzSeriesBatch />}
       </div>
       <div
         role="tabpanel"

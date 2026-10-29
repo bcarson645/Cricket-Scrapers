@@ -1,6 +1,7 @@
 import { cell, cellStr } from "@/lib/scorecards/rowAccess";
 import type { ExportRow } from "@/lib/scorecards/export-columns";
 import type { CricbuzzParsedMatch } from "@/lib/scrapers/sites/cricbuzz/parseHtml";
+import { isMultiInningsMatch } from "@/lib/scrapers/sites/cricbuzz/parseHtml";
 
 export type QaPlayerRow = {
   order: string;
@@ -61,10 +62,13 @@ export function buildScorecardQaView(
 ): ScorecardQaView {
   const first = rows[0];
   const inningsBlocks: QaInningsBlock[] = parsed.innings.map((inn) => {
+    const exportInns = isMultiInningsMatch(parsed)
+      ? inn.teamBattingInningsIndex
+      : inn.inningsNumber;
     const innRows = rows.filter((r) => {
       const t = cell(r, "Team");
       const n = cell(r, "Inns");
-      return String(t) === inn.teamName && Number(n) === inn.inningsNumber;
+      return String(t) === inn.teamName && Number(n) === exportInns;
     });
     const sample = innRows[0];
     return {

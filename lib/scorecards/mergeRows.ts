@@ -1,5 +1,5 @@
 import type { ExportRow } from "@/lib/scorecards/export-columns";
-import { compareExportDates } from "@/lib/scrapers/sites/cricbuzz/discoverRecent";
+import { compareExportDates } from "@/lib/scrapers/sites/cricbuzz/discoverListings";
 import { cell } from "@/lib/scorecards/rowAccess";
 
 export type ScoredMatchRows = {

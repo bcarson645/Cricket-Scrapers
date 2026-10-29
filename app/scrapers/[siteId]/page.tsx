@@ -20,7 +20,7 @@ export default async function ScraperSitePage({ params }: Props) {
       {site.status === "active" && site.id === "cricbuzz" ? (
         <>
           <p className="lead">
-            Recent matches: load the Cricbuzz list and export selected scorecards to one CSV. Single
+            Recent matches and series: load lists and export selected scorecards to one CSV. Single
             scorecard: paste a URL to QA and download that match.
           </p>
           <CricbuzzTabs />
