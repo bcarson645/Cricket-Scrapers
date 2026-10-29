@@ -1,5 +1,7 @@
 const { execSync, spawn } = require("child_process");
+const fs = require("fs");
 const net = require("net");
+const path = require("path");
 
 const PORT = 3000;
 
@@ -44,9 +46,16 @@ async function main() {
     await new Promise((r) => setTimeout(r, 500));
   }
 
-  const child = spawn("npx", ["next", "dev", "--webpack", "-p", String(PORT)], {
+  const cacheDir = path.join(process.cwd(), ".next", "cache");
+  try {
+    fs.rmSync(cacheDir, { recursive: true, force: true });
+  } catch {
+    /* ignore */
+  }
+
+  const child = spawn("node", ["node_modules/next/dist/bin/next", "dev", "-p", String(PORT)], {
     stdio: "inherit",
-    shell: true,
+    shell: false,
     cwd: process.cwd(),
   });
   child.on("exit", (code) => process.exit(code ?? 0));
