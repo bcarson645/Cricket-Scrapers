@@ -1,30 +1,15 @@
 import { applyMappingRegistry } from "@/lib/mappings/apply";
 import { loadMappingRegistry } from "@/lib/mappings/load";
 import type { ScorecardMatch } from "@/lib/scorecards/types";
+import {
+  isCricbuzzScoresUrl,
+  normalizeCricbuzzScorecardUrl,
+  parseCricbuzzMatchId,
+} from "@/lib/scrapers/sites/cricbuzz/matchId";
 import { cricbuzzToExportRows } from "@/lib/scrapers/sites/cricbuzz/buildExportRows";
 import { parseCricbuzzScorecardHtml } from "@/lib/scrapers/sites/cricbuzz/parseHtml";
 
-/** Match id from scorecard, live-scores, or bare numeric id. */
-const CRICBUZZ_MATCH_ID =
-  /cricbuzz\.com\/live-cricket-(?:scorecard|scores)\/(\d+)/i;
-
-export function parseCricbuzzMatchId(input: string): string {
-  const trimmed = input.trim();
-  const fromUrl = trimmed.match(CRICBUZZ_MATCH_ID)?.[1];
-  if (fromUrl) return fromUrl;
-  if (/^\d+$/.test(trimmed)) return trimmed;
-  throw new Error(`Could not parse Cricbuzz match id from: ${input}`);
-}
-
-/** Always fetch the dedicated scorecard page (live-scores URLs are commentary-only). */
-export function normalizeCricbuzzScorecardUrl(input: string): string {
-  const id = parseCricbuzzMatchId(input);
-  return `https://www.cricbuzz.com/live-cricket-scorecard/${id}`;
-}
-
-export function isCricbuzzScoresUrl(input: string): boolean {
-  return /cricbuzz\.com\/live-cricket-scores\//i.test(input.trim());
-}
+export { isCricbuzzScoresUrl, normalizeCricbuzzScorecardUrl, parseCricbuzzMatchId };
 
 const DEFAULT_HEADERS: Record<string, string> = {
   "User-Agent":

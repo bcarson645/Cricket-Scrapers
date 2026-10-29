@@ -1,6 +1,7 @@
 import type { ParsedScorecard, SiteAdapter } from "@/lib/scrapers/types";
-import { parseCricbuzzMatchId, scrapeCricbuzzScorecard } from "@/lib/scrapers/sites/cricbuzz/scrape";
+import { parseCricbuzzMatchId } from "@/lib/scrapers/sites/cricbuzz/matchId";
 
+/** Lightweight adapter for registry / workbench — does not import cheerio or scrape pipeline. */
 export const cricbuzzSiteAdapter: SiteAdapter = {
   siteId: "cricbuzz",
   label: "Cricbuzz",
@@ -16,6 +17,7 @@ export const cricbuzzSiteAdapter: SiteAdapter = {
 };
 
 export async function fetchCricbuzzParsed(matchIdOrUrl: string): Promise<ParsedScorecard> {
+  const { scrapeCricbuzzScorecard } = await import("@/lib/scrapers/sites/cricbuzz/scrape");
   const { match, rows, sourceUrl } = await scrapeCricbuzzScorecard(matchIdOrUrl);
   return {
     matchId: match.id,
@@ -25,6 +27,7 @@ export async function fetchCricbuzzParsed(matchIdOrUrl: string): Promise<ParsedS
     notes: [`Cricbuzz ${sourceUrl}`, `${rows.length} export rows`],
   };
 }
+
 export function cricbuzzIdFromInput(input: string): string {
   return parseCricbuzzMatchId(input);
 }

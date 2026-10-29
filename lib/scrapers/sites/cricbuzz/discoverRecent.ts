@@ -1,7 +1,10 @@
 import * as cheerio from "cheerio";
 import type { Element } from "domhandler";
 import type { SiteMatchSummary } from "@/lib/scrapers/types";
-import { normalizeCricbuzzScorecardUrl, parseCricbuzzMatchId } from "@/lib/scrapers/sites/cricbuzz/scrape";
+import {
+  normalizeCricbuzzScorecardUrl,
+  parseCricbuzzMatchId,
+} from "@/lib/scrapers/sites/cricbuzz/matchId";
 
 const SCORECARD_HREF =
   /\/live-cricket-(?:scorecard|scores)\/(\d+)(?:\/([^"?#]+))?/i;
