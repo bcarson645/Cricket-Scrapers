@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "node scripts/dev-start.cjs",
-    "build": "next build",
+    "build": "node scripts/assert-public-npm-lock.cjs && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "scrape:cricbuzz": "tsx scripts/scrape-cricbuzz-scorecard.ts",
