@@ -28,6 +28,130 @@ main {
   padding: 2rem 1.25rem 4rem;
 }
 
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  align-items: stretch;
+}
+
+.app-sidebar {
+  flex: 0 0 240px;
+  width: 240px;
+  border-right: 1px solid var(--border);
+  background: #121a26;
+  padding: 1.25rem 0 2rem;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-content main {
+  max-width: 960px;
+}
+
+.sidebar-heading {
+  margin: 0 1.25rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sidebar-link.active {
+  color: var(--text);
+  background: rgba(61, 154, 106, 0.12);
+  border-left-color: var(--accent);
+}
+
+.sidebar-link-label {
+  min-width: 0;
+}
+
+.sidebar-badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+}
+
+.sidebar-badge-live {
+  background: rgba(61, 154, 106, 0.25);
+  color: #a7e9c4;
+}
+
+.placeholder-card .lead {
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    flex: none;
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0 0.75rem 0.5rem;
+  }
+
+  .sidebar-link {
+    border-left: none;
+    border-radius: 6px;
+    padding: 0.45rem 0.65rem;
+  }
+
+  .sidebar-link.active {
+    border-left: none;
+  }
+}
+
 .input-wide {
   max-width: 100%;
   width: 100%;
