@@ -101,7 +101,7 @@ export function CricbuzzDiscoverBatch() {
           . Select rows, then export one CSV with all scorecards in date order.
         </p>
         <button type="button" className="primary" disabled={busy} onClick={onDiscover}>
-          {busy ? "Loading…" : "Discover recent matches"}
+          {busy ? "Loading…" : "Load recent matches"}
         </button>
       </section>
 
