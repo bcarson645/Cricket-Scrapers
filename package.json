@@ -1,0 +1,29 @@
+{
+  "name": "cricket-scorecard-scrapers",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/dev-start.cjs",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "scrape:cricbuzz": "tsx scripts/scrape-cricbuzz-scorecard.ts",
+    "compare:golden": "tsx scripts/compare-golden.ts"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "next": "^16.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0"
+  }
+}

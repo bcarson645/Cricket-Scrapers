@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "teams": [
+    { "name": "India", "internalTeamId": 6 },
+    { "name": "England", "internalTeamId": 6 },
+    { "name": "New Zealand", "internalTeamId": 5 }
+  ],
+  "matches": [
+    {
+      "internalMatchId": 1512772,
+      "cricbuzzMatchId": "139478",
+      "date": "3/5/2026",
+      "teams": ["India", "England"],
+      "format": "T20I Major",
+      "venueId": 58324,
+      "hostId": 9,
+      "competitionId": 7,
+      "formatId": 6
+    },
+    {
+      "internalMatchId": 1512773,
+      "cricbuzzMatchId": "139489",
+      "date": "3/8/2026",
+      "teams": ["India", "New Zealand"],
+      "format": "T20I Major",
+      "venueId": 57851,
+      "hostId": 9,
+      "competitionId": 7,
+      "formatId": 6
+    }
+  ],
+  "players": [
+    {
+      "internalPlayerId": 425943,
+      "cricbuzzPlayerId": "8271",
+      "exportName": "SV Samson",
+      "aliases": ["Sanju Samson"]
+    },
+    {
+      "internalPlayerId": 1070183,
+      "cricbuzzPlayerId": "12086",
+      "exportName": "Abhishek Sharma"
+    },
+    {
+      "internalPlayerId": 669365,
+      "cricbuzzPlayerId": "10479",
+      "exportName": "PD Salt",
+      "aliases": ["Philip Salt"]
+    }
+  ]
+}
