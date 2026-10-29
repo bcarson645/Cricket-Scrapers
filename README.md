@@ -23,6 +23,17 @@ Open http://localhost:3000 — pick site/dates, discover matches, select rows, s
 
 ## Deploy (Vercel)
 
+Your project dashboard shows **“No Production Deployment”** when the Vercel project exists but **no build has succeeded** yet — usually Git is not connected, or the first deploy never finished (e.g. login/passkey interrupted).
+
+### Connect GitHub and deploy
+
+1. Open [cricket-scrapers on Vercel](https://vercel.com/ben-carsons-projects/cricket-scrapers) → **Settings** → **Git**.
+2. If no repo is linked, **Connect Git Repository** → choose **`bcarson645/Cricket-Scrapers`**, production branch **`main`**.
+3. **Settings** → **General** → **Node.js Version** → **22.x** (required for `node:sqlite`).
+4. **Deployments** → **Redeploy** (or push any commit to `main`).
+
+Build command: `npm run build` · Install: `npm install` · Root directory: `.` (repo root).
+
 1. Push this repo to GitHub (or GitLab/Bitbucket), then [import the project in Vercel](https://vercel.com/new) — framework **Next.js**, Node **22.x**.
 2. Or from this folder (after [Vercel CLI login](https://vercel.com/docs/cli)):
 
