@@ -1,7 +1,7 @@
 "use client";
 
 import type { SiteMatchSummary } from "@/lib/scrapers/types";
-import { CricbuzzMatchExportTable } from "@/app/components/CricbuzzMatchExportTable";
+import { MatchExportTable } from "@/app/components/MatchExportTable";
 
 export async function downloadCricbuzzBatchCsv(matchIds: string[]): Promise<void> {
   const res = await fetch("/api/cricbuzz/scorecards/batch?format=csv", {
@@ -29,9 +29,11 @@ type BatchTableProps = {
 
 export function CricbuzzMatchExportSection({ matches, busy }: BatchTableProps) {
   return (
-    <CricbuzzMatchExportTable
+    <MatchExportTable
       matches={matches}
       busy={busy}
+      matchIdColumnLabel="Cricbuzz ID"
+      exportKey="matchId"
       onScrapeCsv={downloadCricbuzzBatchCsv}
     />
   );

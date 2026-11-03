@@ -1,4 +1,5 @@
 node_modules/
+# Local Next build output (also uses %LOCALAPPDATA%/cricket-scorecard-scrapers-next when distDir is set)
 .next/
 out/
 *.db
@@ -10,4 +11,6 @@ data/scrapers.db
 fixtures/golden/*
 !fixtures/README.md
 output/
+tmp.csv
+tmp-cricinfo*
 *.tsbuildinfo

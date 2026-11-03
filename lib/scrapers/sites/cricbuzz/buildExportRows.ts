@@ -11,6 +11,10 @@ import {
   setTeamOversCap,
   type ExportRow,
 } from "@/lib/scorecards/export-columns";
+import {
+  catchCountForPlayer,
+  countMatchCatchesFromInnings,
+} from "@/lib/scorecards/catchCounts";
 import { mapCricbuzzDismissal, normalizePersonName } from "@/lib/scrapers/sites/cricbuzz/dismissal";
 import {
   findBowler,
@@ -137,6 +141,7 @@ export function cricbuzzToExportRows(
 ): ExportRow[] {
   const rows: ExportRow[] = [];
   const wkNames = wicketKeeperNames(parsed.innings);
+  const matchCatchCounts = countMatchCatchesFromInnings(parsed.innings);
   const matchTopBat = topBatterInMatch(parsed.innings);
   const matchTopBowl = topBowlerInMatch(parsed.innings);
   const chaseTarget = parsed.innings.find((i) => i.inningsNumber === 1)?.total ?? null;
@@ -217,7 +222,7 @@ export function cricbuzzToExportRows(
       setExtrasBreakdown(row, inn.extras);
       setTeamOversCap(row, inn.oversCap);
       setCol(row, "PlayerID", member.cricbuzzPlayerId);
-      setCol(row, "Catches", 0);
+      setCol(row, "Catches", catchCountForPlayer(member.name, matchCatchCounts));
 
       rows.push(row);
     }

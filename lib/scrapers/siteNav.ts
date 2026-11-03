@@ -18,10 +18,17 @@ export const SCRAPER_SITES: ScraperSiteNavItem[] = [
     note: "International and major tournaments; recent-match discover and scorecard export.",
   },
   {
+    id: "countycrickethub",
+    label: "County Cricket Hub",
+    status: "active",
+    note: "County player availability — injury, transfer, and retirement news.",
+    referenceUrl: "https://countycrickethub.net/",
+  },
+  {
     id: "cricinfo",
     label: "Cricinfo",
-    status: "planned",
-    note: "ESPNcricinfo scorecards — feasibility TBD.",
+    status: "active",
+    note: "ESPN Cricinfo series fixtures and full-scorecard export (JSON-backed).",
     referenceUrl: "https://www.espncricinfo.com/",
   },
   {

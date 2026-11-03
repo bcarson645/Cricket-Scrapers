@@ -18,6 +18,7 @@ export function SidebarNav() {
             <li key={site.id}>
               <Link
                 href={href}
+                prefetch={false}
                 className={active ? "sidebar-link active" : "sidebar-link"}
                 aria-current={active ? "page" : undefined}
               >

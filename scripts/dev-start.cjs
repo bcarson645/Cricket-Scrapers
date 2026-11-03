@@ -46,11 +46,14 @@ async function main() {
     await new Promise((r) => setTimeout(r, 500));
   }
 
-  const cacheDir = path.join(process.cwd(), ".next", "cache");
-  try {
-    fs.rmSync(cacheDir, { recursive: true, force: true });
-  } catch {
-    /* ignore */
+  // Only wipe cache when explicitly requested (avoids slow restarts; OneDrive .next sync is handled via distDir in next.config.js).
+  if (process.env.CLEAR_NEXT_CACHE === "1") {
+    const cacheDir = path.join(process.cwd(), ".next", "cache");
+    try {
+      fs.rmSync(cacheDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
   }
 
   const child = spawn("node", ["node_modules/next/dist/bin/next", "dev", "-p", String(PORT)], {
