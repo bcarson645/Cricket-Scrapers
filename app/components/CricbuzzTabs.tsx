@@ -2,17 +2,29 @@
 
 import { useState } from "react";
 import { CricbuzzDiscoverBatch } from "@/app/components/CricbuzzDiscoverBatch";
+import { CricbuzzDiscoverByDate } from "@/app/components/CricbuzzDiscoverByDate";
 import { CricbuzzScorecardQa } from "@/app/components/CricbuzzScorecardQa";
 import { CricbuzzSeriesBatch } from "@/app/components/CricbuzzSeriesBatch";
 
-type TabId = "recent" | "series" | "single";
+type TabId = "daterange" | "recent" | "series" | "single";
 
 export function CricbuzzTabs() {
-  const [tab, setTab] = useState<TabId>("recent");
+  const [tab, setTab] = useState<TabId>("daterange");
 
   return (
-    <section className="cricbuzz-tabs">
+    <section className="cricbuzz-tabs cch-hub">
       <div className="tab-list" role="tablist" aria-label="Cricbuzz tools">
+        <button
+          type="button"
+          role="tab"
+          id="tab-daterange"
+          aria-selected={tab === "daterange"}
+          aria-controls="panel-daterange"
+          className={tab === "daterange" ? "tab active" : "tab"}
+          onClick={() => setTab("daterange")}
+        >
+          Date range
+        </button>
         <button
           type="button"
           role="tab"
@@ -46,6 +58,15 @@ export function CricbuzzTabs() {
         >
           Single scorecard
         </button>
+      </div>
+      <div
+        role="tabpanel"
+        id="panel-daterange"
+        aria-labelledby="tab-daterange"
+        hidden={tab !== "daterange"}
+        className="tab-panel"
+      >
+        {tab === "daterange" && <CricbuzzDiscoverByDate />}
       </div>
       <div
         role="tabpanel"

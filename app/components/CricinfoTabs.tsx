@@ -2,17 +2,29 @@
 
 import { useState } from "react";
 import { CricinfoBallByBallPanel } from "@/app/components/CricinfoBallByBallPanel";
+import { CricinfoDiscoverByDate } from "@/app/components/CricinfoDiscoverByDate";
 import { CricinfoScorecardQa } from "@/app/components/CricinfoScorecardQa";
 import { CricinfoSeriesBatch } from "@/app/components/CricinfoSeriesBatch";
 
-type TabId = "series" | "single" | "ballbyball";
+type TabId = "daterange" | "series" | "single" | "ballbyball";
 
 export function CricinfoTabs() {
-  const [tab, setTab] = useState<TabId>("series");
+  const [tab, setTab] = useState<TabId>("daterange");
 
   return (
-    <section className="cricbuzz-tabs">
+    <section className="cricbuzz-tabs cch-hub">
       <div className="tab-list" role="tablist" aria-label="Cricinfo tools">
+        <button
+          type="button"
+          role="tab"
+          id="ci-tab-daterange"
+          aria-selected={tab === "daterange"}
+          aria-controls="ci-panel-daterange"
+          className={tab === "daterange" ? "tab active" : "tab"}
+          onClick={() => setTab("daterange")}
+        >
+          Date range
+        </button>
         <button
           type="button"
           role="tab"
@@ -46,6 +58,15 @@ export function CricinfoTabs() {
         >
           Ball-by-ball
         </button>
+      </div>
+      <div
+        role="tabpanel"
+        id="ci-panel-daterange"
+        aria-labelledby="ci-tab-daterange"
+        hidden={tab !== "daterange"}
+        className="tab-panel"
+      >
+        {tab === "daterange" && <CricinfoDiscoverByDate />}
       </div>
       <div
         role="tabpanel"
