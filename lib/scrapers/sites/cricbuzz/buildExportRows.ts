@@ -123,8 +123,17 @@ function sameTeamName(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-/** Bowling figures for players when their side is fielding (opposition batting innings). */
+/** Bowling figures for players when their side fielded during the opponent's matching innings (same nth innings each). */
 function bowlersWhenTeamFielded(parsed: CricbuzzParsedMatch, battingInn: CricbuzzInnings): CricbuzzBowlLine[] {
+  if (isMultiInningsMatch(parsed)) {
+    const k = battingInn.teamBattingInningsIndex;
+    const opponentBattingInn = parsed.innings.find(
+      (i) =>
+        sameTeamName(i.teamName, battingInn.opponentName) &&
+        i.teamBattingInningsIndex === k,
+    );
+    return opponentBattingInn?.bowlers ?? [];
+  }
   return parsed.innings
     .filter((i) => sameTeamName(i.teamName, battingInn.opponentName))
     .flatMap((i) => i.bowlers);

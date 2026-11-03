@@ -28,8 +28,15 @@ export const SCRAPER_SITES: ScraperSiteNavItem[] = [
     id: "cricinfo",
     label: "Cricinfo",
     status: "active",
-    note: "ESPN Cricinfo series fixtures and full-scorecard export (JSON-backed).",
+    note: "ESPN Cricinfo series scorecards and ball-by-ball TSV export (JSON + commentary API).",
     referenceUrl: "https://www.espncricinfo.com/",
+  },
+  {
+    id: "nvplay-ecb",
+    label: "NV Play (ECB)",
+    status: "active",
+    note: "ECB NV Play — discover by date/competition, batch or single-match 52-column CSV via w-api.ecb.nvplay.net.",
+    referenceUrl: "https://live.nvplay.com/ecb/",
   },
   {
     id: "crex",

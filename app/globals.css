@@ -210,6 +210,176 @@ main {
   min-height: 2rem;
 }
 
+.app-content main:has(.cch-hub) {
+  max-width: min(1680px, calc(100vw - 280px));
+}
+
+.cch-hub {
+  margin-top: 0.5rem;
+}
+
+.cch-tool-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .cch-tool-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cch-query-panel {
+  margin-bottom: 0;
+  position: sticky;
+  top: 1rem;
+}
+
+.cch-query-panel h2,
+.cch-result-filters h2,
+.cch-result-section h2 {
+  margin-bottom: 0.65rem;
+}
+
+.cch-query-intro {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.cch-results-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cch-results-panel .card {
+  margin-bottom: 0;
+}
+
+.cch-status-line {
+  margin: 0;
+}
+
+.cch-result-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cch-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.cch-filter-span2 {
+  grid-column: span 2;
+}
+
+.cch-filter-check {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 0.35rem;
+}
+
+@media (max-width: 1100px) {
+  .cch-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cch-filter-span2 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .cch-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cch-filter-span2 {
+    grid-column: span 1;
+  }
+}
+
+.cch-query-panel select.input-wide,
+.cch-query-panel input.input-wide,
+.cch-result-filters select.input-wide,
+.cch-result-filters input.input-wide {
+  max-width: none;
+  width: 100%;
+}
+
+.cch-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin: 0.75rem 0;
+}
+
+.cch-pagination-summary {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.cch-pagination-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+}
+
+.cch-pagination-label {
+  display: inline;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.cch-pagination-select {
+  width: auto;
+  max-width: 5rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.cch-page-btn {
+  padding: 0.4rem 0.75rem;
+  margin: 0;
+}
+
+.cch-page-indicator {
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-width: 6.5rem;
+  text-align: center;
+}
+
+.cch-empty-hint {
+  margin-bottom: 0;
+}
+
+.nv-comp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.nv-comp-count {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
 .news-table-wrap {
   overflow-x: auto;
   margin-top: 0.75rem;

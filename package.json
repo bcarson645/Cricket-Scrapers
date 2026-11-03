@@ -11,7 +11,11 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "scrape:cricbuzz": "tsx scripts/scrape-cricbuzz-scorecard.ts",
-    "compare:golden": "tsx scripts/compare-golden.ts"
+    "compare:golden": "tsx scripts/compare-golden.ts",
+    "export:bbb": "tsx scripts/export-cricinfo-ball-by-ball.ts",
+    "compare:bbb": "tsx scripts/compare-bbb-1473510.ts",
+    "scrape:nvplay-ecb": "tsx scripts/scrape-nvplay-ecb-scorecard.ts",
+    "export:cch-players": "tsx scripts/export-cch-players.ts"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
@@ -25,5 +29,22 @@
     "@types/react-dom": "^18.3.7",
     "tsx": "^4.23.15",
     "typescript": "^5.9.0"
-  }
+  },
+  "description": "Next.js App Router app — **components render**, **`app/data` builds view models**, **`lib/` holds server plumbing** (SQLite + site scrapers), **`app/api`** for discover/scrape.",
+  "main": "next.config.mjs",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bcarson645/Cricket-Scrapers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/bcarson645/Cricket-Scrapers/issues"
+  },
+  "homepage": "https://github.com/bcarson645/Cricket-Scrapers#readme"
 }

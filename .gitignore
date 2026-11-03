@@ -12,5 +12,11 @@ fixtures/golden/*
 !fixtures/README.md
 output/
 tmp.csv
+tmp-ball-comment-sample.json
 tmp-cricinfo*
+tmp-nvplay*
+tmp-extracted*
+tmp-innings*
+tmp-ipl*
+tmp-over*
 *.tsbuildinfo

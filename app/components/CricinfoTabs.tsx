@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { CricinfoBallByBallPanel } from "@/app/components/CricinfoBallByBallPanel";
 import { CricinfoScorecardQa } from "@/app/components/CricinfoScorecardQa";
 import { CricinfoSeriesBatch } from "@/app/components/CricinfoSeriesBatch";
 
-type TabId = "series" | "single";
+type TabId = "series" | "single" | "ballbyball";
 
 export function CricinfoTabs() {
   const [tab, setTab] = useState<TabId>("series");
@@ -34,6 +35,17 @@ export function CricinfoTabs() {
         >
           Single scorecard
         </button>
+        <button
+          type="button"
+          role="tab"
+          id="ci-tab-ballbyball"
+          aria-selected={tab === "ballbyball"}
+          aria-controls="ci-panel-ballbyball"
+          className={tab === "ballbyball" ? "tab active" : "tab"}
+          onClick={() => setTab("ballbyball")}
+        >
+          Ball-by-ball
+        </button>
       </div>
       <div
         role="tabpanel"
@@ -52,6 +64,15 @@ export function CricinfoTabs() {
         className="tab-panel"
       >
         {tab === "single" && <CricinfoScorecardQa />}
+      </div>
+      <div
+        role="tabpanel"
+        id="ci-panel-ballbyball"
+        aria-labelledby="ci-tab-ballbyball"
+        hidden={tab !== "ballbyball"}
+        className="tab-panel"
+      >
+        {tab === "ballbyball" && <CricinfoBallByBallPanel />}
       </div>
     </section>
   );

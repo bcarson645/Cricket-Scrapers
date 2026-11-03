@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { CountyCricketHubAvailability } from "@/app/components/CountyCricketHubAvailability";
+import { CountyCricketHubPanel } from "@/app/components/CountyCricketHubPanel";
 import { CricbuzzTabs } from "@/app/components/CricbuzzTabs";
 import { CricinfoTabs } from "@/app/components/CricinfoTabs";
+import { NvPlayEcbPanel } from "@/app/components/NvPlayEcbPanel";
 import { ScraperPlaceholder } from "@/app/components/ScraperPlaceholder";
 import { getScraperSite, scraperSiteIds } from "@/lib/scrapers/siteNav";
 
@@ -30,19 +31,21 @@ export default async function ScraperSitePage({ params }: Props) {
       ) : site.status === "active" && site.id === "countycrickethub" ? (
         <>
           <p className="lead">
-            Scrape County Cricket Hub player news and review injury, transfer, and retirement updates
-            in one place.
+            Availability news and squad player profiles from County Cricket Hub — separate tabs,
+            filters, and paginated results.
           </p>
-          <CountyCricketHubAvailability />
+          <CountyCricketHubPanel />
         </>
       ) : site.status === "active" && site.id === "cricinfo" ? (
         <>
           <p className="lead">
-            Load a full series from the fixtures &amp; results page, or paste a single full-scorecard
-            URL. Export uses the same 52-column CSV pipeline as Cricbuzz.
+            Load a series, export scorecards (52-column CSV), or use the Ball-by-ball tab for
+            per-delivery TSV export from a scorecard or commentary URL.
           </p>
           <CricinfoTabs />
         </>
+      ) : site.status === "active" && site.id === "nvplay-ecb" ? (
+        <NvPlayEcbPanel />
       ) : (
         <ScraperPlaceholder site={site} />
       )}

@@ -21,6 +21,11 @@ const MENS_COUNTIES = [
 ] as const;
 
 /** Mirrors County Cricket Hub `getTeamName` for men's counties (site M). */
+/** All county squad labels for filters (18 teams per competition). */
+export function countyNamesForSite(site: "M" | "F"): string[] {
+  return Array.from({ length: 18 }, (_, i) => countyNameFromTeamId(i + 1, site));
+}
+
 export function countyNameFromTeamId(teamId: number, site: "M" | "F" = "M"): string {
   if (site === "F" && teamId > 200 && teamId < 219) {
     const idx = teamId - 200;

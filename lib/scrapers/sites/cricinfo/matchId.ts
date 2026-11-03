@@ -7,6 +7,7 @@ export function normalizeCricinfoScorecardUrl(input: string): string {
   }
   url = url.replace(/^https?:\/\/(?:www\.)?cricinfo\.com/i, "https://www.espncricinfo.com");
   url = url.replace(/\/+$/, "");
+  url = url.replace(/\/ball-by-ball-commentary$/i, "/full-scorecard");
   if (!/\/full-scorecard$/i.test(url)) {
     url = url.replace(/\/live-scorecard$/i, "/full-scorecard");
     if (!/\/full-scorecard$/i.test(url)) {

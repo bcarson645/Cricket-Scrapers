@@ -1,27 +1,21 @@
-import fs from "fs";
-import * as cheerio from "cheerio";
+const url =
+  "https://www.cricbuzz.com/live-cricket-over-by-over/118928/rcb-vs-pbks-final-indian-premier-league-2025?iid=1";
 
-const html = fs.readFileSync("fixtures/cricbuzz-139489.html", "utf8");
-const $ = cheerio.load(html);
-
-function listBowlers(sel: string, inningsId: string) {
-  const root = $(sel);
-  const seen = new Set<string>();
-  root.find(`a[href*="bowling?inningsId=${inningsId}"]`).each((_, a) => {
-    const href = $(a).attr("href") ?? "";
-    const m = href.match(/player\/(\d+)\//);
-    const pid = m?.[1] ?? href;
-    if (seen.has(pid)) return;
-    seen.add(pid);
-    const title = $(a).attr("title")?.replace("View match performance of ", "") ?? "";
-    const grid = $(a).closest(".grid");
-    const stats = grid
-      .find(".flex.justify-center.items-center")
-      .map((_, c) => $(c).text().trim())
-      .get();
-    console.log(title, stats.join("|"));
-  });
+async function main() {
+  const h = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0" },
+  }).then((r) => r.text());
+  console.log("len", h.length);
+  for (const n of ["commentaryList", "commText", "overNum", "Arshdeep", "Salt", "__NEXT_DATA__"]) {
+    console.log(n, h.includes(n));
+  }
+  const scripts = [...h.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  console.log("scripts", scripts.length);
+  for (const s of scripts) {
+    if (s.includes("commentary") || s.includes("118928")) {
+      console.log("script snippet", s.slice(0, 200).replace(/\s+/g, " "));
+    }
+  }
 }
 
-listBowlers("#scard-team-2-innings-1", "1");
-listBowlers("#scard-team-13-innings-2", "2");
+main();

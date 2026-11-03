@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   AvailabilityNewsItem,
   AvailabilityTimeframe,
@@ -11,10 +11,15 @@ import {
   categoryFilterLabel,
   type AvailabilityCategory,
 } from "@/lib/scrapers/sites/countycrickethub/categories";
+import { countyNamesForSite } from "@/lib/scrapers/sites/countycrickethub/teams";
 import {
   defaultCustomDateRange,
   type TimeframePreset,
 } from "@/lib/scrapers/sites/countycrickethub/timeframe";
+import {
+  paginateSlice,
+  PaginationControls,
+} from "@/app/components/cch/PaginationControls";
 
 type LoadResult = {
   site: "M" | "F";
@@ -68,43 +73,117 @@ function selectedCategories(sel: Record<AvailabilityCategory, boolean>): Availab
   return AVAILABILITY_CATEGORIES.filter((c) => sel[c]);
 }
 
-function NewsTable({ items }: { items: AvailabilityNewsItem[] }) {
-  if (items.length === 0) {
-    return <p className="hint">No items in this section for the selected filters.</p>;
-  }
+function filterNewsItems(
+  items: AvailabilityNewsItem[],
+  county: string,
+  search: string,
+): AvailabilityNewsItem[] {
+  const q = search.trim().toLowerCase();
+  return items.filter((row) => {
+    if (county && row.county !== county) return false;
+    if (!q) return true;
+    const hay = `${row.playerName} ${row.details} ${row.county}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+function NewsSectionBlock({
+  sectionKey,
+  title,
+  hint,
+  allItems,
+  resultCounty,
+  resultSearch,
+  truncated,
+  loadedCount,
+}: {
+  sectionKey: AvailabilityCategory;
+  title: string;
+  hint: string;
+  allItems: AvailabilityNewsItem[];
+  resultCounty: string;
+  resultSearch: string;
+  truncated?: boolean;
+  loadedCount?: number;
+}) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  useEffect(() => {
+    setPage(1);
+  }, [resultCounty, resultSearch]);
+
+  const filtered = useMemo(
+    () => filterNewsItems(allItems, resultCounty, resultSearch),
+    [allItems, resultCounty, resultSearch],
+  );
+
+  const pageItems = useMemo(
+    () => paginateSlice(filtered, page, pageSize),
+    [filtered, page, pageSize],
+  );
+
   return (
-    <div className="news-table-wrap">
-      <table className="news-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>County</th>
-            <th>Player</th>
-            <th>Details</th>
-            <th>Source</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((row, i) => (
-            <tr key={`${row.date}-${row.playerName}-${row.county}-${i}`}>
-              <td>{row.dateDisplay || "—"}</td>
-              <td>{row.county}</td>
-              <td>{row.playerName}</td>
-              <td>{row.details}</td>
-              <td>
-                {row.link ? (
-                  <a href={row.link} target="_blank" rel="noreferrer">
-                    Link
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <section className="card cch-result-section">
+      <div className="cch-result-section-head">
+        <div>
+          <h2>{title}</h2>
+          <p className="hint" style={{ margin: 0 }}>
+            {hint} ({filtered.length} after filters
+            {filtered.length !== allItems.length ? `, ${allItems.length} loaded` : ""})
+            {truncated && loadedCount != null
+              ? ` — API returned first ${loadedCount} rows; narrow timeframe for full history.`
+              : ""}
+          </p>
+        </div>
+      </div>
+      {filtered.length === 0 ? (
+        <p className="hint">No items in this section for the selected filters.</p>
+      ) : (
+        <>
+          <PaginationControls
+            idPrefix={`cch-news-${sectionKey}`}
+            page={page}
+            pageSize={pageSize}
+            total={filtered.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+          <div className="news-table-wrap">
+            <table className="news-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>County</th>
+                  <th>Player</th>
+                  <th>Details</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((row, i) => (
+                  <tr key={`${row.date}-${row.playerName}-${row.county}-${i}`}>
+                    <td>{row.dateDisplay || "—"}</td>
+                    <td>{row.county}</td>
+                    <td>{row.playerName}</td>
+                    <td>{row.details}</td>
+                    <td>
+                      {row.link ? (
+                        <a href={row.link} target="_blank" rel="noreferrer">
+                          Link
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </section>
   );
 }
 
@@ -119,6 +198,11 @@ export function CountyCricketHubAvailability() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [data, setData] = useState<LoadResult | null>(null);
+
+  const [resultCounty, setResultCounty] = useState("");
+  const [resultSearch, setResultSearch] = useState("");
+
+  const countyOptions = useMemo(() => countyNamesForSite(site), [site]);
 
   function toggleCategory(key: AvailabilityCategory) {
     setCategorySel((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -138,6 +222,8 @@ export function CountyCricketHubAvailability() {
 
     setBusy(true);
     setMessage(null);
+    setResultCounty("");
+    setResultSearch("");
     try {
       const params = new URLSearchParams({ site, preset });
       if (preset === "custom") {
@@ -161,7 +247,7 @@ export function CountyCricketHubAvailability() {
       setData(body);
       const total = body.categories.reduce((n, key) => n + body.sections[key].total, 0);
       setMessage(
-        `${total} update(s) — ${body.timeframe.label}, ${categoryFilterLabel(body.categories)} (${site === "M" ? "men's" : "women's"}).`,
+        `${total} update(s) loaded — ${body.timeframe.label}, ${categoryFilterLabel(body.categories)} (${site === "M" ? "men's" : "women's"}). Use result filters and pagination per section below.`,
       );
     } catch (e) {
       setData(null);
@@ -174,19 +260,15 @@ export function CountyCricketHubAvailability() {
   const allCategoriesSelected = AVAILABILITY_CATEGORIES.every((c) => categorySel[c]);
 
   return (
-    <>
-      <section className="card">
-        <h2>Player availability news</h2>
-        <p className="hint" style={{ marginTop: 0, marginBottom: "1rem" }}>
-          Pulls the same feed as{" "}
-          <a
-            href="https://countycrickethub.net/news-injury.html?site=M"
-            target="_blank"
-            rel="noreferrer"
-          >
-            County Cricket Hub — injury / availability
+    <div className="cch-tool-layout">
+      <aside className="card cch-query-panel">
+        <h2>Query — availability news</h2>
+        <p className="hint cch-query-intro">
+          Same feed as{" "}
+          <a href="https://countycrickethub.net/news-injury.html?site=M" target="_blank" rel="noreferrer">
+            CCH injury / availability
           </a>
-          . Choose categories and timeframe, then load.
+          . Set competition, categories, and timeframe, then load.
         </p>
         <label htmlFor="cch-site">Competition</label>
         <select
@@ -278,28 +360,77 @@ export function CountyCricketHubAvailability() {
             {busy ? "Loading…" : "Load availability news"}
           </button>
         </div>
-      </section>
+      </aside>
 
-      {message && <p className="hint">{message}</p>}
+      <div className="cch-results-panel">
+        {message && <p className="hint cch-status-line">{message}</p>}
 
-      {data &&
-        SECTION_META.filter(({ key }) => data.categories.includes(key)).map(
-          ({ key, title, hint }) => {
-            const section = data.sections[key];
-            return (
-              <section className="card news-section" key={key}>
-                <h2>{title}</h2>
-                <p className="hint" style={{ marginTop: 0 }}>
-                  {hint}{" "}
-                  {section.total > section.items.length
-                    ? `(showing ${section.items.length} of ${section.total})`
-                    : `(${section.total})`}
-                </p>
-                <NewsTable items={section.items} />
-              </section>
-            );
-          },
+        {data && (
+          <section className="card cch-result-filters">
+            <h2>Result filters</h2>
+            <p className="hint" style={{ marginTop: 0 }}>
+              Applied to each news section separately. Pagination resets when you change filters.
+            </p>
+            <div className="cch-filter-grid">
+              <div>
+                <label htmlFor="cch-news-county">County</label>
+                <select
+                  id="cch-news-county"
+                  className="input-wide"
+                  value={resultCounty}
+                  onChange={(e) => setResultCounty(e.target.value)}
+                >
+                  <option value="">All counties</option>
+                  {countyOptions.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="cch-filter-span2">
+                <label htmlFor="cch-news-search">Search</label>
+                <input
+                  id="cch-news-search"
+                  className="input-wide"
+                  type="search"
+                  placeholder="Player, county, or details…"
+                  value={resultSearch}
+                  onChange={(e) => setResultSearch(e.target.value)}
+                />
+              </div>
+            </div>
+          </section>
         )}
-    </>
+
+        {data &&
+          SECTION_META.filter(({ key }) => data.categories.includes(key)).map(
+            ({ key, title, hint }) => {
+              const section = data.sections[key];
+              return (
+                <NewsSectionBlock
+                  key={`${key}-${data.site}-${data.timeframe.label}-${resultCounty}-${resultSearch}`}
+                  sectionKey={key}
+                  title={title}
+                  hint={hint}
+                  allItems={section.items}
+                  resultCounty={resultCounty}
+                  resultSearch={resultSearch}
+                  truncated={section.total > section.items.length}
+                  loadedCount={section.items.length}
+                />
+              );
+            },
+          )}
+
+        {!data && !message && (
+          <section className="card cch-empty-hint">
+            <p className="hint" style={{ margin: 0 }}>
+              Run a query on the left to see injury, transfer, and retirement sections here.
+            </p>
+          </section>
+        )}
+      </div>
+    </div>
   );
 }
