@@ -1,3 +1,7 @@
+import { nvplayEcbMatchUrlFromApiId } from "@/lib/scrapers/sites/nvplay-ecb/urls";
+
+export { nvplayEcbMatchUrlFromApiId } from "@/lib/scrapers/sites/nvplay-ecb/urls";
+
 const NVPLAY_ECB_LIVE = /^https?:\/\/live\.nvplay\.com\/ecb\/?/i;
 
 /** Hash fragment `#mc…` or `#c…` on live.nvplay.com/ecb URLs. */
@@ -34,12 +38,6 @@ export function isNvplayEcbMatchUrl(input: string): boolean {
 export function normalizeNvplayEcbMatchUrl(input: string): string {
   const matchId = parseNvplayEcbMatchIdFromUrl(input);
   return nvplayEcbMatchUrlFromApiId(matchId);
-}
-
-/** Build live site URL from NV Play API `MatchId` (with or without `c` prefix). */
-export function nvplayEcbMatchUrlFromApiId(matchId: string): string {
-  const bare = matchId.trim().replace(/^c/i, "");
-  return `https://live.nvplay.com/ecb/?tab=m_scorecard#mc${bare}`;
 }
 
 export function nvplayMatchUrlLooksLikeEcb(input: string): boolean {

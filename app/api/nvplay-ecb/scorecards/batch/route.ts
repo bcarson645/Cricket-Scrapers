@@ -4,7 +4,7 @@ import { loadMappingRegistry } from "@/lib/mappings/load";
 import type { ExportRow } from "@/lib/scorecards/export-columns";
 import { mergeExportRowsByDate } from "@/lib/scorecards/mergeRows";
 import { rowsToCsv } from "@/lib/scorecards/toCsv";
-import { nvplayEcbMatchUrlFromApiId } from "@/lib/scrapers/sites/nvplay-ecb/matchUrl";
+import { nvplayEcbMatchUrlFromApiId } from "@/lib/scrapers/sites/nvplay-ecb/urls";
 import { scrapeNvplayEcbScorecard } from "@/lib/scrapers/sites/nvplay-ecb/scrape";
 
 export const runtime = "nodejs";

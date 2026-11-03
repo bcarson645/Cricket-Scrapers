@@ -1,6 +1,6 @@
 import { NVPLAY_ECB_CUSTOMER_ID } from "@/lib/scrapers/sites/nvplay-ecb/config";
 import { fetchNvplayEcbWidgetAuth } from "@/lib/scrapers/sites/nvplay-ecb/widgetAuth";
-import { nvplayEcbMatchUrlFromApiId } from "@/lib/scrapers/sites/nvplay-ecb/matchUrl";
+import { nvplayEcbMatchUrlFromApiId } from "@/lib/scrapers/sites/nvplay-ecb/urls";
 import type { SiteMatchSummary } from "@/lib/scrapers/types";
 
 export type NvplayMatchListRow = {

@@ -8,15 +8,17 @@ import type {
 import { MatchExportTable } from "@/app/components/MatchExportTable";
 import { downloadNvplayEcbBatchCsv } from "@/app/components/nvplayBatchExport";
 
-function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+function localIsoDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function defaultRange(): { from: string; to: string } {
   const to = new Date();
-  const from = new Date(to);
-  from.setUTCDate(from.getUTCDate() - 31);
-  return { from: isoDate(from), to: isoDate(to) };
+  const from = new Date(to.getFullYear(), 0, 1);
+  return { from: localIsoDate(from), to: localIsoDate(to) };
 }
 
 type DiscoverResponse = {
@@ -34,12 +36,14 @@ export function NvPlayEcbDiscoverBatch() {
   const [completeOnly, setCompleteOnly] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DiscoverResponse | null>(null);
   const [selectedCompIds, setSelectedCompIds] = useState<Set<number>>(new Set());
 
   async function onLoadMatches() {
     setBusy(true);
     setMessage(null);
+    setError(null);
     setData(null);
     setSelectedCompIds(new Set());
     try {
@@ -55,7 +59,7 @@ export function NvPlayEcbDiscoverBatch() {
         `${ok.totalInRange} match(es) in range — ${ok.competitions.length} competition(s). First load may take up to a minute (full NV Play match list).`,
       );
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Load failed");
+      setError(e instanceof Error ? e.message : "Load failed");
     } finally {
       setBusy(false);
     }
@@ -96,7 +100,7 @@ export function NvPlayEcbDiscoverBatch() {
           Loads the ECB NV Play match list, then filters by start date (<code>StartDateTimeUTC</code>
           ). Multi-day games appear on their start day only.
         </p>
-        <div className="date-range-row">
+        <div className="nv-date-query">
           <div>
             <label htmlFor="nv-from">From</label>
             <input
@@ -134,10 +138,11 @@ export function NvPlayEcbDiscoverBatch() {
             {busy ? "Loading match list…" : "Load matches in range"}
           </button>
         </div>
+        {error && <p className="hint error">{error}</p>}
       </aside>
 
       <div className="cch-results-panel">
-        {message && <p className="hint cch-status-line">{message}</p>}
+        {message && !error && <p className="hint cch-status-line">{message}</p>}
 
         {data && data.competitions.length > 0 && (
           <section className="card cch-result-filters">
