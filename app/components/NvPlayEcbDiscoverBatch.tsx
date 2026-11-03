@@ -21,6 +21,30 @@ function defaultRange(): { from: string; to: string } {
   return { from: localIsoDate(from), to: localIsoDate(to) };
 }
 
+function parseLocalIsoDate(iso: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return new Date(y, mo - 1, d);
+}
+
+function formatRangeDate(iso: string): string {
+  const d = parseLocalIsoDate(iso);
+  if (!d) return iso;
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function inclusiveDayCount(from: string, to: string): number | null {
+  const a = parseLocalIsoDate(from);
+  const b = parseLocalIsoDate(to);
+  if (!a || !b || a > b) return null;
+  const ms = b.getTime() - a.getTime();
+  return Math.floor(ms / (24 * 60 * 60 * 1000)) + 1;
+}
+
 type DiscoverResponse = {
   from: string;
   to: string;
@@ -92,6 +116,18 @@ export function NvPlayEcbDiscoverBatch() {
     data.competitions.length > 0 &&
     data.competitions.every((c) => selectedCompIds.has(c.competitionId));
 
+  const rangeDays = inclusiveDayCount(from, to);
+
+  function onFromChange(next: string) {
+    setFrom(next);
+    if (next && to && next > to) setTo(next);
+  }
+
+  function onToChange(next: string) {
+    setTo(next);
+    if (next && from && next < from) setFrom(next);
+  }
+
   return (
     <div className="cch-tool-layout">
       <aside className="card cch-query-panel">
@@ -100,30 +136,46 @@ export function NvPlayEcbDiscoverBatch() {
           Loads the ECB NV Play match list, then filters by start date (<code>StartDateTimeUTC</code>
           ). Multi-day games appear on their start day only.
         </p>
-        <div className="nv-date-query">
-          <div>
+        <fieldset className="nv-date-query">
+          <legend>Date range</legend>
+          <p className="nv-date-range-summary" id="nv-date-summary">
+            <span className="nv-date-range-label">Selected</span>
+            <span className="nv-date-range-values">
+              {formatRangeDate(from)} – {formatRangeDate(to)}
+            </span>
+            {rangeDays != null && (
+              <span className="nv-date-range-days">
+                {rangeDays} day{rangeDays === 1 ? "" : "s"}
+              </span>
+            )}
+          </p>
+          <div className="nv-date-field">
             <label htmlFor="nv-from">From</label>
             <input
               id="nv-from"
-              className="input-wide"
+              className="input-wide nv-date-input"
               type="date"
               value={from}
-              onChange={(e) => setFrom(e.target.value)}
+              max={to}
+              onChange={(e) => onFromChange(e.target.value)}
               disabled={busy}
+              aria-describedby="nv-date-summary"
             />
           </div>
-          <div>
+          <div className="nv-date-field">
             <label htmlFor="nv-to">To</label>
             <input
               id="nv-to"
-              className="input-wide"
+              className="input-wide nv-date-input"
               type="date"
               value={to}
-              onChange={(e) => setTo(e.target.value)}
+              min={from}
+              onChange={(e) => onToChange(e.target.value)}
               disabled={busy}
+              aria-describedby="nv-date-summary"
             />
           </div>
-        </div>
+        </fieldset>
         <label className="category-check" style={{ marginBottom: "0.75rem" }}>
           <input
             type="checkbox"
