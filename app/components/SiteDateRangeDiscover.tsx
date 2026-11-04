@@ -17,6 +17,7 @@ type DiscoverResponse = {
   matches: MatchWithSeries[];
   totalInRange: number;
   daysQueried?: number;
+  discoverSource?: "cricinfo" | "espn";
 };
 
 type Props = {
@@ -74,7 +75,7 @@ export function SiteDateRangeDiscover({
       setMessage(
         `${ok.totalInRange} ${siteLabel} match(es) in range across ${ok.series.length} series${
           ok.daysQueried != null ? ` (${ok.daysQueried} day(s) queried on results page)` : ""
-        }.`,
+        }${ok.discoverSource === "espn" ? " — list via ESPN scoreboard (production fallback)." : ""}.`,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Load failed");

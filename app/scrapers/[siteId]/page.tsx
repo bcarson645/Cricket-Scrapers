@@ -4,6 +4,7 @@ import { CrexTabs } from "@/app/components/CrexTabs";
 import { CricbuzzTabs } from "@/app/components/CricbuzzTabs";
 import { CricinfoTabs } from "@/app/components/CricinfoTabs";
 import { NvPlayEcbPanel } from "@/app/components/NvPlayEcbPanel";
+import { NvPlayAusPanel } from "@/app/components/NvPlayAusPanel";
 import { ScraperPlaceholder } from "@/app/components/ScraperPlaceholder";
 import { getScraperSite, scraperSiteIds } from "@/lib/scrapers/siteNav";
 
@@ -47,6 +48,8 @@ export default async function ScraperSitePage({ params }: Props) {
         </>
       ) : site.status === "active" && site.id === "nvplay-ecb" ? (
         <NvPlayEcbPanel />
+      ) : site.status === "active" && site.id === "nvplay-aus" ? (
+        <NvPlayAusPanel />
       ) : site.status === "active" && site.id === "crex" ? (
         <>
           <p className="lead">

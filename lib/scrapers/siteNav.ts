@@ -39,6 +39,13 @@ export const SCRAPER_SITES: ScraperSiteNavItem[] = [
     referenceUrl: "https://live.nvplay.com/ecb/",
   },
   {
+    id: "nvplay-aus",
+    label: "NV Play (Australia)",
+    status: "active",
+    note: "Cricket Australia NV Play — discover by date/competition, batch or single-match 52-column CSV via live.nvplay.com/play.",
+    referenceUrl: "https://live.nvplay.com/play/",
+  },
+  {
     id: "crex",
     label: "Crex",
     status: "active",

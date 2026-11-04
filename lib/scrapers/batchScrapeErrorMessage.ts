@@ -1,6 +1,6 @@
 type BatchErrorBody = {
   error?: string;
-  errors?: { matchId?: string; error?: string }[];
+  errors?: { matchId?: string; url?: string; error?: string }[];
 };
 
 /** Surface per-match failures when the batch route returns 502 with an errors array. */
@@ -9,9 +9,11 @@ export function formatBatchScrapeErrorMessage(data: BatchErrorBody, fallback: st
   const details = (data.errors ?? [])
     .map((e) => {
       const id = e.matchId?.trim();
+      const url = "url" in e ? String((e as { url?: string }).url ?? "").trim() : "";
       const msg = e.error?.trim();
       if (!msg) return null;
-      return id ? `${id}: ${msg}` : msg;
+      const label = id || url || "match";
+      return `${label}: ${msg}`;
     })
     .filter((line): line is string => Boolean(line));
 

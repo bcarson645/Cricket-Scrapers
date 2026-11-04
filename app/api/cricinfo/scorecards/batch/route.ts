@@ -6,7 +6,7 @@ import { mergeExportRowsByDate } from "@/lib/scorecards/mergeRows";
 import { rowsToCsv } from "@/lib/scorecards/toCsv";
 import { scrapeCricinfoScorecard } from "@/lib/scrapers/sites/cricinfo/scrape";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 export const maxDuration = 120;
 
 type Body = {

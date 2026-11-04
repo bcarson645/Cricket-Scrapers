@@ -1,6 +1,6 @@
-import { normalizeCricinfoScorecardUrl } from "@/lib/scrapers/sites/cricinfo/matchId";
+import { normalizeCricinfoScorecardUrl, stripCricinfoUrlHash } from "@/lib/scrapers/sites/cricinfo/matchId";
 
-const DEFAULT_HEADERS: Record<string, string> = {
+const SAFARI_HEADERS: Record<string, string> = {
   "User-Agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -10,8 +10,24 @@ const DEFAULT_HEADERS: Record<string, string> = {
   Pragma: "no-cache",
 };
 
+const MOBILE_HEADERS: Record<string, string> = {
+  "User-Agent":
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-GB,en;q=0.9",
+  Referer: "https://www.espncricinfo.com/",
+};
+
+const DEFAULT_HEADERS: Record<string, string> = SAFARI_HEADERS;
+
+export { stripCricinfoUrlHash };
+
 export function isCricinfoHttpForbidden(error: unknown): boolean {
   return error instanceof Error && /\bHTTP 403\b/.test(error.message);
+}
+
+async function fetchCricinfoHtmlOnce(url: string, headers: Record<string, string>): Promise<Response> {
+  return fetch(url, { headers, cache: "no-store" });
 }
 
 export type CricinfoAppPageData = {
@@ -37,11 +53,20 @@ function extractNextDataRoot(html: string): { props?: { appPageProps?: { data?: 
 }
 
 export async function fetchCricinfoHtml(url: string): Promise<string> {
-  const res = await fetch(url, { headers: DEFAULT_HEADERS, cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Cricinfo HTTP ${res.status} for ${url}`);
+  const cleanUrl = stripCricinfoUrlHash(url);
+  const attempts = [DEFAULT_HEADERS, MOBILE_HEADERS];
+  let lastStatus = 0;
+  for (const headers of attempts) {
+    const res = await fetchCricinfoHtmlOnce(cleanUrl, headers);
+    lastStatus = res.status;
+    if (res.ok) {
+      return res.text();
+    }
+    if (res.status !== 403) {
+      throw new Error(`Cricinfo HTTP ${res.status} for ${cleanUrl}`);
+    }
   }
-  return res.text();
+  throw new Error(`Cricinfo HTTP ${lastStatus} for ${cleanUrl}`);
 }
 
 export async function fetchCricinfoScorecardHtml(url: string): Promise<string> {

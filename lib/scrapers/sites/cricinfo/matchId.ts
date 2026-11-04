@@ -1,7 +1,17 @@
 const MATCH_OBJECT_ID = /-(\d{6,})(?:\/full-scorecard|\/live-scorecard|\/|$)/i;
 
+export function stripCricinfoUrlHash(input: string): string {
+  try {
+    const u = new URL(input.trim());
+    u.hash = "";
+    return u.toString();
+  } catch {
+    return input.split("#")[0] ?? input;
+  }
+}
+
 export function normalizeCricinfoScorecardUrl(input: string): string {
-  let url = input.trim();
+  let url = stripCricinfoUrlHash(input.trim());
   if (!url.startsWith("http")) {
     url = `https://www.espncricinfo.com${url.startsWith("/") ? "" : "/"}${url}`;
   }

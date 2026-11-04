@@ -38,8 +38,8 @@ function formatMatchDate(iso: string | undefined): string | null {
   return `${d.getUTCMonth() + 1}/${d.getUTCDate()}/${d.getUTCFullYear()}`;
 }
 
-function buildPlaceholderScorecardUrl(matchId: number): string {
-  return `https://www.espncricinfo.com/series/x-${matchId}/x-${matchId}/full-scorecard`;
+function buildPlaceholderScorecardUrl(matchId: number, espnLeagueId: number): string {
+  return `https://www.espncricinfo.com/series/x-${matchId}/x-${matchId}/full-scorecard#espnLeague=${espnLeagueId}`;
 }
 
 async function fetchEspnCricketHeader(): Promise<EspnLeague[]> {
@@ -118,7 +118,7 @@ export async function discoverCricinfoMatchesViaEspn(options: {
         title: fullTitle,
         matchDate: formatMatchDate(ev.date),
         competition: seriesName,
-        url: buildPlaceholderScorecardUrl(matchId),
+        url: buildPlaceholderScorecardUrl(matchId, seriesId),
         seriesId,
       });
     }
