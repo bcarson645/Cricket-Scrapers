@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CountyCricketHubPanel } from "@/app/components/CountyCricketHubPanel";
+import { CrexTabs } from "@/app/components/CrexTabs";
 import { CricbuzzTabs } from "@/app/components/CricbuzzTabs";
 import { CricinfoTabs } from "@/app/components/CricinfoTabs";
 import { NvPlayEcbPanel } from "@/app/components/NvPlayEcbPanel";
@@ -46,6 +47,21 @@ export default async function ScraperSitePage({ params }: Props) {
         </>
       ) : site.status === "active" && site.id === "nvplay-ecb" ? (
         <NvPlayEcbPanel />
+      ) : site.status === "active" && site.id === "crex" ? (
+        <>
+          <p className="lead">
+            Discover matches from{" "}
+            <a href="https://crex.com/schedule" target="_blank" rel="noreferrer">
+              crex.com/schedule
+            </a>{" "}
+            or a{" "}
+            <a href="https://crex.com/series" target="_blank" rel="noreferrer">
+              series
+            </a>{" "}
+            page, then export selected scorecards to one CSV — or paste a single match scorecard link.
+          </p>
+          <CrexTabs />
+        </>
       ) : (
         <ScraperPlaceholder site={site} />
       )}

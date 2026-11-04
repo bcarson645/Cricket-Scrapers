@@ -1,5 +1,6 @@
-import { NVPLAY_ECB_CUSTOMER_ID } from "@/lib/scrapers/sites/nvplay-ecb/config";
+import { NVPLAY_ECB_CUSTOMER_ID, NVPLAY_ECB_LIVE_URL } from "@/lib/scrapers/sites/nvplay-ecb/config";
 import { fetchNvplayEcbWidgetAuth } from "@/lib/scrapers/sites/nvplay-ecb/widgetAuth";
+import { nvplayScorecardApiIds } from "@/lib/scrapers/sites/nvplay-ecb/scorecardId";
 
 export type NvplayBattingCardLine = {
   Id?: string;
@@ -52,31 +53,53 @@ async function apiBaseUrl(): Promise<string> {
   return cachedApiBase;
 }
 
+const NV_FETCH_HEADERS = {
+  Accept: "application/json",
+  Origin: NVPLAY_ECB_LIVE_URL.replace(/\/$/, ""),
+  Referer: `${NVPLAY_ECB_LIVE_URL}?tab=m_scorecard`,
+};
+
 export async function fetchNvplayEcbScorecard(matchId: string): Promise<{
   matchId: string;
   apiBaseUrl: string;
   data: NvplayScorecardPayload;
 }> {
   const base = await apiBaseUrl();
-  const id = matchId.startsWith("c") ? matchId : `c${matchId.replace(/^mc/i, "")}`;
-  const url = `${base}/api/scorecard/${id}`;
-  const res = await fetch(url, {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`NV Play scorecard HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`);
+  const candidates = nvplayScorecardApiIds(matchId);
+  if (candidates.length === 0) {
+    throw new Error("NV Play match id is empty");
   }
-  const text = await res.text();
-  if (!text.trim()) {
-    throw new Error("NV Play scorecard returned empty body (Bearer token may be required for this match)");
+
+  let lastHttp = 0;
+  let lastEmpty = false;
+
+  for (const id of candidates) {
+    const url = `${base}/api/scorecard/${id}`;
+    const res = await fetch(url, { headers: NV_FETCH_HEADERS, cache: "no-store" });
+    lastHttp = res.status;
+    if (!res.ok) {
+      if (res.status === 404) continue;
+      const body = await res.text().catch(() => "");
+      throw new Error(`NV Play scorecard HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`);
+    }
+    const text = await res.text();
+    if (!text.trim()) {
+      lastEmpty = true;
+      continue;
+    }
+    const data = JSON.parse(text) as NvplayScorecardPayload;
+    if (!data.Innings?.length) {
+      continue;
+    }
+    return { matchId: id, apiBaseUrl: base, data };
   }
-  const data = JSON.parse(text) as NvplayScorecardPayload;
-  if (!data.Innings?.length) {
-    throw new Error("NV Play scorecard JSON has no innings");
+
+  if (lastEmpty || lastHttp === 204) {
+    throw new Error(
+      "NV Play scorecard is not available for this match (empty API response). Use an ECB county match on live.nvplay.com/ecb, or confirm the game has a published scorecard.",
+    );
   }
-  return { matchId: id, apiBaseUrl: base, data };
+  throw new Error("NV Play scorecard JSON has no innings");
 }
 
 export async function fetchNvplayEcbMatchListSummary(matchId: string): Promise<Record<string, unknown> | null> {

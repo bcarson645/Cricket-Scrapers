@@ -41,8 +41,8 @@ export const SCRAPER_SITES: ScraperSiteNavItem[] = [
   {
     id: "crex",
     label: "Crex",
-    status: "planned",
-    note: "Indian and UAE domestic series and leagues.",
+    status: "active",
+    note: "Crex.com — schedule window, series discover, and 52-column scorecard CSV via SSR JSON.",
     referenceUrl: "https://crex.com/series",
   },
   {

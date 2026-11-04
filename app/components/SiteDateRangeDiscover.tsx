@@ -29,6 +29,7 @@ type Props = {
   onScorecardOnlyChange?: (v: boolean) => void;
   scorecardOnlyLabel?: string;
   matchIdColumnLabel: string;
+  exportKey?: "matchId" | "url";
   onScrapeCsv: (matchIds: string[]) => Promise<void>;
   initialRange?: { from: string; to: string };
 };
@@ -43,6 +44,7 @@ export function SiteDateRangeDiscover({
   onScorecardOnlyChange,
   scorecardOnlyLabel = "Matches with scorecard only",
   matchIdColumnLabel,
+  exportKey = "matchId",
   onScrapeCsv,
   initialRange = defaultYearToDateRange(),
 }: Props) {
@@ -157,7 +159,7 @@ export function SiteDateRangeDiscover({
             matches={visibleMatches}
             busy={busy}
             matchIdColumnLabel={matchIdColumnLabel}
-            exportKey="matchId"
+            exportKey={exportKey}
             onScrapeCsv={onScrapeCsv}
           />
         )}

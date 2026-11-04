@@ -1,5 +1,7 @@
 "use client";
 
+import { formatBatchScrapeErrorMessage } from "@/lib/scrapers/batchScrapeErrorMessage";
+
 export async function downloadNvplayEcbBatchCsv(matchIds: string[]): Promise<void> {
   const res = await fetch("/api/nvplay-ecb/scorecards/batch?format=csv", {
     method: "POST",
@@ -8,7 +10,7 @@ export async function downloadNvplayEcbBatchCsv(matchIds: string[]): Promise<voi
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error((data as { error?: string }).error ?? "Batch scrape failed");
+    throw new Error(formatBatchScrapeErrorMessage(data, "Batch scrape failed"));
   }
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
