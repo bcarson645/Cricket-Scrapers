@@ -7,11 +7,12 @@ import {
   type SeriesOption,
 } from "@/lib/scrapers/dateRangeFilter";
 import type { SiteMatchSummary } from "@/lib/scrapers/types";
-import { fetchCricinfoHtml } from "@/lib/scrapers/sites/cricinfo/fetchPageData";
+import { fetchCricinfoHtml, isCricinfoHttpForbidden } from "@/lib/scrapers/sites/cricinfo/fetchPageData";
+import { discoverCricinfoMatchesViaEspn } from "@/lib/scrapers/sites/cricinfo/discoverScheduleEspn";
 
 const RESULTS_BASE = "https://www.espncricinfo.com/live-cricket-match-results";
 const MAX_DAYS_PER_REQUEST = 120;
-const FETCH_CONCURRENCY = 6;
+const FETCH_CONCURRENCY = 2;
 
 type CiSeriesRef = {
   objectId?: number;
@@ -123,7 +124,16 @@ export async function discoverCricinfoMatchesByDateRange(options: {
   }
 
   const days = eachIsoDateInRange(from, to);
-  const perDay = await mapPool(days, FETCH_CONCURRENCY, (day) => fetchMatchesForResultsDay(day));
+  let perDay: CiScheduleMatch[][];
+  try {
+    perDay = await mapPool(days, FETCH_CONCURRENCY, (day) => fetchMatchesForResultsDay(day));
+  } catch (e) {
+    if (isCricinfoHttpForbidden(e)) {
+      const fallback = await discoverCricinfoMatchesViaEspn(options);
+      return fallback;
+    }
+    throw e;
+  }
 
   const byObjectId = new Map<number, CiScheduleMatch>();
   for (const list of perDay) {

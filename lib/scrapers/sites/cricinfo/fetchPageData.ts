@@ -2,10 +2,17 @@ import { normalizeCricinfoScorecardUrl } from "@/lib/scrapers/sites/cricinfo/mat
 
 const DEFAULT_HEADERS: Record<string, string> = {
   "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
   "Accept-Language": "en-GB,en;q=0.9",
+  Referer: "https://www.espncricinfo.com/",
+  "Cache-Control": "no-cache",
+  Pragma: "no-cache",
 };
+
+export function isCricinfoHttpForbidden(error: unknown): boolean {
+  return error instanceof Error && /\bHTTP 403\b/.test(error.message);
+}
 
 export type CricinfoAppPageData = {
   match: Record<string, unknown>;
