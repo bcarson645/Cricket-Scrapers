@@ -10,6 +10,21 @@ export function stripCricinfoUrlHash(input: string): string {
   }
 }
 
+/** ESPN discover stores series id in `#espnLeague=` on placeholder scorecard URLs. */
+export function parseEspnLeagueIdFromCricinfoUrl(input: string): number | null {
+  try {
+    const u = new URL(input.trim());
+    const fromHash = u.hash.match(/espnLeague=(\d+)/i)?.[1];
+    if (fromHash) {
+      const n = Number(fromHash);
+      return Number.isFinite(n) ? n : null;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 export function normalizeCricinfoScorecardUrl(input: string): string {
   let url = stripCricinfoUrlHash(input.trim());
   if (!url.startsWith("http")) {

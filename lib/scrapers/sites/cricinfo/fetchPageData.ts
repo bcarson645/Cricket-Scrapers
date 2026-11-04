@@ -18,7 +18,17 @@ const MOBILE_HEADERS: Record<string, string> = {
   Referer: "https://www.espncricinfo.com/",
 };
 
-const DEFAULT_HEADERS: Record<string, string> = SAFARI_HEADERS;
+const CHROME_HEADERS: Record<string, string> = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-GB,en;q=0.9",
+  Referer: "https://www.espncricinfo.com/",
+  "Cache-Control": "no-cache",
+  Pragma: "no-cache",
+};
+
+const HTML_HEADER_SETS: Record<string, string>[] = [SAFARI_HEADERS, MOBILE_HEADERS, CHROME_HEADERS];
 
 export { stripCricinfoUrlHash };
 
@@ -40,10 +50,28 @@ export type CricinfoSeriesPageData = {
   matches: Record<string, unknown>[];
 };
 
+function htmlHasNextData(html: string): boolean {
+  return /<script id="__NEXT_DATA__"/.test(html);
+}
+
+function missingNextDataError(url: string, html: string): Error {
+  const title = html.match(/<title>([^<]*)/i)?.[1]?.trim();
+  const blocked =
+    /access denied|permission denied|reference #|akamai|bot manager|unusual traffic/i.test(html);
+  if (blocked) {
+    return new Error(
+      `Cricinfo blocked this request (Akamai; no scorecard JSON).${title ? ` Page title: ${title}` : ""}`,
+    );
+  }
+  return new Error(
+    `Cricinfo page did not include __NEXT_DATA__${title ? ` (${title})` : ""} for ${url}`,
+  );
+}
+
 function extractNextDataRoot(html: string): { props?: { appPageProps?: { data?: Record<string, unknown> } } } {
   const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
   if (!m?.[1]) {
-    throw new Error("Cricinfo page did not include __NEXT_DATA__");
+    throw missingNextDataError("scorecard page", html);
   }
   try {
     return JSON.parse(m[1]) as { props?: { appPageProps?: { data?: Record<string, unknown> } } };
@@ -52,26 +80,51 @@ function extractNextDataRoot(html: string): { props?: { appPageProps?: { data?: 
   }
 }
 
-export async function fetchCricinfoHtml(url: string): Promise<string> {
+export async function fetchCricinfoHtml(
+  url: string,
+  options?: { requireNextData?: boolean },
+): Promise<string> {
   const cleanUrl = stripCricinfoUrlHash(url);
-  const attempts = [DEFAULT_HEADERS, MOBILE_HEADERS];
   let lastStatus = 0;
-  for (const headers of attempts) {
+  let lastHtml = "";
+  for (const headers of HTML_HEADER_SETS) {
     const res = await fetchCricinfoHtmlOnce(cleanUrl, headers);
     lastStatus = res.status;
     if (res.ok) {
-      return res.text();
+      const html = await res.text();
+      if (!options?.requireNextData || htmlHasNextData(html)) {
+        return html;
+      }
+      lastHtml = html;
+      continue;
     }
     if (res.status !== 403) {
       throw new Error(`Cricinfo HTTP ${res.status} for ${cleanUrl}`);
     }
   }
+  if (lastHtml && options?.requireNextData) {
+    throw missingNextDataError(cleanUrl, lastHtml);
+  }
   throw new Error(`Cricinfo HTTP ${lastStatus} for ${cleanUrl}`);
 }
 
 export async function fetchCricinfoScorecardHtml(url: string): Promise<string> {
-  const normalized = normalizeCricinfoScorecardUrl(url);
-  return fetchCricinfoHtml(normalized);
+  const { resolveCricinfoScorecardUrl } = await import(
+    "@/lib/scrapers/sites/cricinfo/resolveScorecardUrl"
+  );
+  const resolved = await resolveCricinfoScorecardUrl(url);
+  const fallback = normalizeCricinfoScorecardUrl(url);
+  const candidates = resolved === fallback ? [resolved] : [resolved, fallback];
+
+  let lastError: Error | undefined;
+  for (const candidate of candidates) {
+    try {
+      return await fetchCricinfoHtml(candidate, { requireNextData: true });
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastError ?? new Error("Failed to fetch Cricinfo scorecard HTML");
 }
 
 export async function fetchCricinfoSeriesPageHtml(url: string): Promise<string> {

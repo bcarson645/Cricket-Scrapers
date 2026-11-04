@@ -6,6 +6,7 @@ import {
   type SeriesOption,
 } from "@/lib/scrapers/dateRangeFilter";
 import type { SiteMatchSummary } from "@/lib/scrapers/types";
+import { enrichCricinfoDiscoverUrls } from "@/lib/scrapers/sites/cricinfo/resolveScorecardUrl";
 
 const ESPN_CRICKET_HEADER =
   "https://site.web.api.espn.com/apis/personalized/v2/scoreboard/header?sport=cricket";
@@ -130,6 +131,8 @@ export async function discoverCricinfoMatchesViaEspn(options: {
     if (da !== db) return da.localeCompare(db);
     return a.title.localeCompare(b.title);
   });
+
+  await enrichCricinfoDiscoverUrls(matches);
 
   return {
     from,
