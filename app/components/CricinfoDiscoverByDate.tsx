@@ -27,6 +27,7 @@ export function CricinfoDiscoverByDate() {
       onScorecardOnlyChange={setScorecardOnly}
       scorecardOnlyLabel="Scorecard available only"
       matchIdColumnLabel="Cricinfo ID"
+      exportKey="url"
       onScrapeCsv={downloadCricinfoBatchCsv}
     />
   );

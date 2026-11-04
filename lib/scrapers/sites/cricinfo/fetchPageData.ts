@@ -56,11 +56,19 @@ function htmlHasNextData(html: string): boolean {
 
 function missingNextDataError(url: string, html: string): Error {
   const title = html.match(/<title>([^<]*)/i)?.[1]?.trim();
+  const oops =
+    /Oops|something went wrong|page does not exist or has been moved/i.test(html) ||
+    /\/ci\/content\/test\/error\//i.test(html);
+  if (oops) {
+    return new Error(
+      `Cricinfo scorecard URL not found or invalid${title ? ` (${title})` : ""} — use full scorecard links from discover, not match id only.`,
+    );
+  }
   const blocked =
-    /access denied|permission denied|reference #|akamai|bot manager|unusual traffic/i.test(html);
+    /access denied|permission denied|bot manager|unusual traffic|<title>access denied/i.test(html);
   if (blocked) {
     return new Error(
-      `Cricinfo blocked this request (Akamai; no scorecard JSON).${title ? ` Page title: ${title}` : ""}`,
+      `Cricinfo blocked this request (no scorecard JSON).${title ? ` Page title: ${title}` : ""}`,
     );
   }
   return new Error(

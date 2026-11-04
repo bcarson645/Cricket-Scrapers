@@ -27,6 +27,9 @@ export function parseEspnLeagueIdFromCricinfoUrl(input: string): number | null {
 
 export function normalizeCricinfoScorecardUrl(input: string): string {
   let url = stripCricinfoUrlHash(input.trim());
+  if (/^\d{6,}$/.test(url)) {
+    url = `https://www.espncricinfo.com/series/x-${url}/x-${url}/full-scorecard`;
+  }
   if (!url.startsWith("http")) {
     url = `https://www.espncricinfo.com${url.startsWith("/") ? "" : "/"}${url}`;
   }

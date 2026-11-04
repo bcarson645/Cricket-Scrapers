@@ -7,7 +7,7 @@ import {
   parseCricinfoMatchObjectId,
   parseEspnLeagueIdFromCricinfoUrl,
 } from "@/lib/scrapers/sites/cricinfo/matchId";
-import { buildCricinfoScorecardUrl } from "@/lib/scrapers/sites/cricinfo/seriesUrl";
+import { cricinfoSeriesBaseFromInput } from "@/lib/scrapers/sites/cricinfo/seriesUrl";
 
 const PLACEHOLDER_SCORECARD = /\/series\/x-\d+\/x-\d+\/full-scorecard$/i;
 
@@ -31,6 +31,10 @@ function seriesFixturesUrlForObjectId(seriesObjectId: number): string {
   return `https://www.espncricinfo.com/series/x-${seriesObjectId}/match-schedule-fixtures-and-results`;
 }
 
+function cricinfoSeriesBaseFromFixturesUrl(fixturesUrl: string): string {
+  return cricinfoSeriesBaseFromInput(fixturesUrl);
+}
+
 export async function fetchCricinfoScorecardUrlMapForSeries(
   seriesObjectId: number,
 ): Promise<Map<string, string>> {
@@ -39,7 +43,14 @@ export async function fetchCricinfoScorecardUrlMapForSeries(
 
   const fixturesUrl = seriesFixturesUrlForObjectId(seriesObjectId);
   const html = await fetchCricinfoHtml(fixturesUrl, { requireNextData: true });
-  const { matches } = extractCricinfoSeriesPageData(html);
+  const { series, matches } = extractCricinfoSeriesPageData(html);
+
+  const seriesSlug = String(series.slug ?? "").trim();
+  const seriesId = Number(series.objectId);
+  const seriesBase =
+    seriesSlug && Number.isFinite(seriesId)
+      ? `https://www.espncricinfo.com/series/${seriesSlug}-${seriesId}`
+      : cricinfoSeriesBaseFromFixturesUrl(fixturesUrl);
 
   const map = new Map<string, string>();
   for (const raw of matches) {
@@ -47,7 +58,10 @@ export async function fetchCricinfoScorecardUrlMapForSeries(
     if (m.objectId == null || !m.hasScorecard) continue;
     const slug = m.slug?.trim();
     if (!slug) continue;
-    map.set(String(m.objectId), buildCricinfoScorecardUrl(fixturesUrl, slug, m.objectId));
+    map.set(
+      String(m.objectId),
+      `${seriesBase}/${slug}-${m.objectId}/full-scorecard`,
+    );
   }
 
   scorecardUrlBySeriesCache.set(seriesObjectId, map);
